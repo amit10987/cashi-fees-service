@@ -1,0 +1,7 @@
+<configuration>
+    <logger name="io.ktor.test" level="OFF" />
+    <logger name="io.ktor.server.engine" level="OFF" />
+    <root level="ERROR">
+        <appender-ref ref="CONSOLE" />
+    </root>
+</configuration>
