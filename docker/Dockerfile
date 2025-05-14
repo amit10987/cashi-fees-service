@@ -9,8 +9,8 @@ COPY gradle/ ./gradle/
 # Copy application source code
 COPY src/ ./src/
 
-# Make gradlew executable (important in Linux-based containers)
-RUN chmod +x ./gradlew
+# Fix line endings and make gradlew executable (important in Linux-based containers)
+RUN apt-get update && apt-get install -y dos2unix && dos2unix ./gradlew && chmod +x ./gradlew
 
 # Build the application
 RUN ./gradlew shadowJar --no-daemon || ./gradlew build -x test --no-daemon
