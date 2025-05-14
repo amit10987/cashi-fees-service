@@ -6,7 +6,11 @@ WORKDIR /app
 # Copy Gradle wrapper and build files
 COPY gradlew gradlew.bat settings.gradle.kts build.gradle.kts gradle.properties ./
 COPY gradle/ ./gradle/
+# Copy application source code
 COPY src/ ./src/
+
+# Make gradlew executable (important in Linux-based containers)
+RUN chmod +x ./gradlew
 
 # Build the application
 RUN ./gradlew shadowJar --no-daemon || ./gradlew build -x test --no-daemon
