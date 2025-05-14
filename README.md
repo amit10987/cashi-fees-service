@@ -40,15 +40,15 @@ The project is organized into the following layers:
    ```bash
    ./gradlew run
    ```
-2. Start the Restate server using Docker Compose:
+2. Start only the Restate server using Docker Compose from the root location:
    ```bash
-   docker-compose up restate-server
+   docker-compose -f docker/docker-compose.yml up restate-server
    ```
 3. Register the service with the Restate server:
    ```bash
    curl -X POST http://localhost:9070/deployments \
      -H "Content-Type: application/json" \
-     -d '{"uri": "http://localhost:9080"}'
+     -d '{"uri": "http://host.docker.internal:9080"}'
    ```
 4. Alternatively, you can run the application and Restate server using Docker Compose from the root location:
    ```bash
