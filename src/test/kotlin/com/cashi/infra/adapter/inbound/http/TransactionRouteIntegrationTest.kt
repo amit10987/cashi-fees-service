@@ -1,14 +1,16 @@
-package com.cashi.testsupport
+package com.cashi.infra.adapter.inbound.http
 
 import com.cashi.app.createApplicationContext
 import com.cashi.domain.fixture.aFee
 import com.cashi.domain.fixture.aMobileTopUpTransaction
 import com.cashi.domain.fixture.aTransferTransaction
 import com.cashi.infra.adapter.outbound.workflow.FeeResult
+import com.cashi.testsupport.FeeRateLoader
+import com.cashi.testsupport.RestateIntegrationTestSupport
+import com.cashi.testsupport.TestHttpClientUtils
+import com.cashi.testsupport.runKtorWorkflowTest
 import io.kotest.core.spec.style.FeatureSpec
 import io.kotest.matchers.shouldBe
-import io.ktor.client.*
-import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.serialization.json.Json
@@ -23,14 +25,9 @@ class TransactionRouteIntegrationTest : FeatureSpec({
     }
 
     afterTest {
+        context.transactionRepository.clear()
         testSupport.tearDown()
     }
-
-    suspend fun postTransaction(client: HttpClient, transactionJson: String): HttpResponse =
-        client.post("/api/v1/transaction/fee") {
-            contentType(ContentType.Application.Json)
-            setBody(transactionJson)
-        }
 
     feature("Transaction Fee Calculation") {
         scenario("Client posts a valid mobile top-up transaction") {
@@ -44,7 +41,7 @@ class TransactionRouteIntegrationTest : FeatureSpec({
                     .build()
 
                 // WHEN
-                val response = postTransaction(client, Json.encodeToString(transaction))
+                val response = TestHttpClientUtils.postTransaction(client, Json.encodeToString(transaction))
                 val feeResult = Json.decodeFromString<FeeResult>(response.bodyAsText())
 
                 // THEN
@@ -67,7 +64,7 @@ class TransactionRouteIntegrationTest : FeatureSpec({
                     .build()
 
                 // WHEN
-                val response = postTransaction(client, Json.encodeToString(transaction))
+                val response = TestHttpClientUtils.postTransaction(client, Json.encodeToString(transaction))
                 val feeResult = Json.decodeFromString<FeeResult>(response.bodyAsText())
 
                 // THEN
@@ -92,11 +89,11 @@ class TransactionRouteIntegrationTest : FeatureSpec({
                     .build()
 
                 // WHEN - first request
-                val firstResponse = postTransaction(client, Json.encodeToString(transaction))
+                val firstResponse = TestHttpClientUtils.postTransaction(client, Json.encodeToString(transaction))
                 val firstFeeResult = Json.decodeFromString<FeeResult>(firstResponse.bodyAsText())
 
                 // WHEN - second request with same transaction ID
-                val secondResponse = postTransaction(client, Json.encodeToString(transaction))
+                val secondResponse = TestHttpClientUtils.postTransaction(client, Json.encodeToString(transaction))
                 val secondFeeResult = Json.decodeFromString<FeeResult>(secondResponse.bodyAsText())
 
                 // THEN - both responses are equal
@@ -116,13 +113,13 @@ class TransactionRouteIntegrationTest : FeatureSpec({
         scenario("Client posts a request with an empty body") {
             runKtorWorkflowTest(testSupport.client) { client, _ ->
                 // WHEN
-                val response: HttpResponse = client.post("/api/v1/transaction/fee") {
-                    contentType(ContentType.Application.Json)
-                    setBody("{}")
-                }
+                val response: HttpResponse = TestHttpClientUtils.postTransaction(client, "{}")
 
                 // THEN
                 response.status shouldBe HttpStatusCode.BadRequest
+
+                // THEN - no transaction persisted
+                context.transactionRepository.count() shouldBe 0
             }
         }
 

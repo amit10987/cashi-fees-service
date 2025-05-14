@@ -25,7 +25,6 @@ val logbackVersion = "1.5.13"
 val restateVersion = "2.1.0"
 val kotestVersion = "5.7.2"
 val serializationVersion = "1.6.3"
-//val coroutinesVersion = "1.8.0"
 
 dependencies {
     // Ktor Server
@@ -34,10 +33,6 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.8.1")
-    // Ktor Client
-//    implementation("io.ktor:ktor-client-core:$ktorVersion")
-//    implementation("io.ktor:ktor-client-cio:$ktorVersion")
-//    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
 
     // Logging
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
@@ -48,19 +43,18 @@ dependencies {
     ksp("dev.restate:sdk-api-kotlin-gen:$restateVersion")
 
 
-    // JSON Serialization
-   // implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
-
-    // Kotlin Coroutines
-    //implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-
-    // Kotest for BDD-style tests
+    testImplementation("dev.restate:sdk-testing:${restateVersion}")
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
+    testImplementation("io.ktor:ktor-server-test-host:${ktorVersion}")
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
 }
 
 tasks.test {
     useJUnitPlatform()
+    testLogging {
+        showStandardStreams = true
+        events("passed", "skipped", "failed")
+    }
 }
 
 kotlin {

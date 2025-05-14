@@ -1,47 +1,32 @@
 package com.cashi.app
 
-import com.cashi.application.port.input.ProcessTransactionUseCase
-import com.cashi.application.port.output.TransactionRepository
-import com.cashi.application.service.TransactionProcessor
-import com.cashi.domain.policy.NoFeePolicy
-import com.cashi.domain.policy.StandardMobileTopUpFeePolicy
-import com.cashi.domain.policy.TransferFeePolicy
-import com.cashi.domain.policy.WithdrawalFeePolicy
-import com.cashi.domain.service.FeeCalculator
-import com.cashi.infra.adapter.outbound.persistence.InMemoryTransactionRepository
-import com.cashi.infra.adapter.outbound.workflow.TransactionWorkflow
-import com.cashi.infra.config.configureSerialization
+import com.typesafe.config.ConfigFactory
 import dev.restate.sdk.http.vertx.RestateHttpServer
 import dev.restate.sdk.kotlin.endpoint.endpoint
-import io.ktor.server.application.*
+import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.ktor.server.routing.*
-import transactionRoutes
 
 fun main() {
-    val persister: TransactionRepository = InMemoryTransactionRepository()
-    val feeCalculator = FeeCalculator(
-        listOf(
-            StandardMobileTopUpFeePolicy(),
-            TransferFeePolicy(),
-            WithdrawalFeePolicy(),
-            NoFeePolicy()
-        )
+
+    // Load application.conf using Typesafe Config
+    val config = ConfigFactory.load()
+    val restatePort = config.getInt("restate.deployment.port")
+
+    // Initialize application context
+    val context = createApplicationContext()
+
+    RestateHttpServer.listen(
+        endpoint { bind(context.workflow) },
+        restatePort
     )
-    val useCase: ProcessTransactionUseCase = TransactionProcessor(feeCalculator)
 
-    RestateHttpServer.listen(endpoint { bind(TransactionWorkflow(useCase, persister)) })
-
-    // Start Ktor server
-    embeddedServer(Netty, port = 8181) {
+    embeddedServer(Netty, configure = {
+        val hoconConfig = HoconApplicationConfig(ConfigFactory.load())
+        connector {
+            port = hoconConfig.property("ktor.deployment.port").getString().toInt()
+        }
+    }) {
         module()
-    }.start(wait = false)
-}
-
-fun Application.module() {
-    configureSerialization()
-    routing {
-        transactionRoutes()
-    }
+    }.start(wait = true)
 }

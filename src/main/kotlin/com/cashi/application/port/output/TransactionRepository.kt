@@ -7,4 +7,5 @@ interface TransactionRepository {
     fun save(transaction: Transaction, fee: Fee)
     fun get(transactionId: String): Pair<Transaction, Fee>?
     fun count(): Int
+    fun clear()
 }

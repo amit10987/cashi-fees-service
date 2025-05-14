@@ -1,14 +1,13 @@
-// src/test/kotlin/com/cashi/testsupport/TransactionRouteFailureTest.kt
 package com.cashi.infra.adapter.inbound.http
 
 import com.cashi.app.createApplicationContext
 import com.cashi.domain.fixture.aTransferTransaction
 import com.cashi.domain.service.FeeCalculator
 import com.cashi.testsupport.RestateIntegrationTestSupport
+import com.cashi.testsupport.TestHttpClientUtils
 import com.cashi.testsupport.runKtorWorkflowTest
 import io.kotest.core.spec.style.FeatureSpec
 import io.kotest.matchers.shouldBe
-import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.serialization.json.Json
@@ -25,6 +24,7 @@ class TransactionRouteFailureTest : FeatureSpec({
     }
 
     afterTest {
+        context.transactionRepository.clear()
         testSupport.tearDown()
     }
 
@@ -36,10 +36,8 @@ class TransactionRouteFailureTest : FeatureSpec({
                 val transaction = aTransferTransaction().build()
 
                 // WHEN
-                val response: HttpResponse = client.post("/api/v1/transaction/fee") {
-                    contentType(ContentType.Application.Json)
-                    setBody(Json.encodeToString(transaction))
-                }
+                val response: HttpResponse =
+                    TestHttpClientUtils.postTransaction(client, Json.encodeToString(transaction))
 
                 // THEN
                 response.status shouldBe HttpStatusCode.InternalServerError

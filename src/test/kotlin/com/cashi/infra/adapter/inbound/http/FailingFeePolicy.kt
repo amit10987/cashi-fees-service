@@ -1,5 +1,6 @@
 package com.cashi.infra.adapter.inbound.http
 
+import com.cashi.domain.exception.NonTriableException
 import com.cashi.domain.model.Fee
 import com.cashi.domain.model.Transaction
 import com.cashi.domain.model.Type
@@ -11,7 +12,7 @@ class FailingTransferFeePolicy : FeeCalculationPolicy {
     }
 
     override fun calculate(transaction: Transaction): Fee {
-        throw RuntimeException("Simulated failure in fee calculation")
+        throw NonTriableException()
     }
 
 }

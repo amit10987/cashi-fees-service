@@ -7,13 +7,13 @@
         </encoder>
     </appender>
 
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
 
     <!-- Enable debug logs specifically for Restate -->
-    <logger name="dev.restate" level="DEBUG"/>
+    <logger name="dev.restate" level="INFO"/>
     <!-- Enable your app's logs -->
-    <logger name="com.cashi" level="DEBUG"/>
+    <logger name="com.cashi" level="INFO"/>
 
 </configuration>

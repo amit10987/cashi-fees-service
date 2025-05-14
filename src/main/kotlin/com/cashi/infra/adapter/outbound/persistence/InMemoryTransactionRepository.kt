@@ -18,4 +18,7 @@ class InMemoryTransactionRepository : TransactionRepository {
     }
 
     override fun count(): Int = store.count()
+    override fun clear() {
+        store.clear()
+    }
 }
