@@ -5,16 +5,19 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    container_name: cashi_fees_service
+    container_name: cashi-fees-service
     ports:
       - "8181:8181" # Expose port 8181 to host
       - "9080:9080" # Expose port 9080 for internal communication
     networks:
       - restate-network
 
+    environment:
+      - RESTATE_CLIENT_ENDPOINT=http://restate-dev:8080
+
   restate-server:
     image: docker.restate.dev/restatedev/restate:latest
-    container_name: restate_dev
+    container_name: restate-dev
     ports:
       - "8080:8080"  # Expose port 8080 for workflow API
       - "9070:9070"  # Expose port 9070 for service registration
@@ -28,10 +31,10 @@ services:
   deploy-service:
     image: curlimages/curl:latest
     container_name: deploy_service
-    command: ["/bin/sh", "-c", "until curl -s http://cashi_fees_service:9080/health; do echo 'Waiting for cashi_fees_service...'; sleep 2; done && \
-      curl -X POST http://restate_dev:9070/deployments \
+    command: ["/bin/sh", "-c", "until curl -s http://cashi-fees-service:9080/health; do echo 'Waiting for cashi-fees-service...'; sleep 2; done && \
+      curl -X POST http://restate-dev:9070/deployments \
       -H 'Content-Type: application/json' \
-      -d '{\"uri\": \"http://cashi_fees_service:9080\"}'"]
+      -d '{\"uri\": \"http://cashi-fees-service:9080\"}'"]
     networks:
       - restate-network
     depends_on:
