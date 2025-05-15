@@ -27,7 +27,7 @@ The project is organized into the following layers:
 ## How to Build the Project
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/amit10987/cashi-fees-service.git
    cd cashi-fees-service
    ```
 2. Build the project using Gradle:
